@@ -6,6 +6,7 @@ import {
 import { Reorder, AnimatePresence, motion } from 'framer-motion';
 
 const pb = new PocketBase(import.meta.env.VITE_POCKETBASE_URL || 'https://centraldedados.dev.br');
+pb.autoCancellation(false); // Desativa o cancelamento automático para limpar o console
 
 const Header = ({ onOpenModal, searchQuery, onSearchChange }: { 
   onOpenModal: () => void,
@@ -558,10 +559,26 @@ const FilterChips = ({ categories, activeFilter, onFilterChange }: { categories:
   );
 };
 
+interface LinkCardProps {
+  key?: any;
+  icon: any;
+  iconColor?: string;
+  glowColor?: string;
+  title: string;
+  url: string;
+  tags: string[];
+  isFeatured?: boolean;
+  isMaterialIcon?: boolean;
+  customColor?: string;
+  onEdit: () => void;
+  onDelete: () => void;
+  item: any;
+}
+
 const LinkCard = ({ 
   icon: Icon, 
-  iconColor, 
-  glowColor,
+  iconColor = '', 
+  glowColor = '',
   title, 
   url, 
   tags, 
@@ -571,20 +588,7 @@ const LinkCard = ({
   onEdit,
   onDelete,
   item
-}: { 
-  icon: any, 
-  iconColor: string, 
-  glowColor: string, 
-  title: string, 
-  url: string, 
-  tags: string[], 
-  isFeatured?: boolean,
-  isMaterialIcon?: boolean,
-  customColor?: string,
-  onEdit: () => void,
-  onDelete: () => void,
-  item: any
-}) => (
+}: LinkCardProps) => (
   <Reorder.Item
     value={item}
     id={item.id.toString()}
@@ -655,75 +659,86 @@ const LinkCard = ({
   </Reorder.Item>
 );
 
-const Insights = () => (
-  <div className="mt-16 mb-12">
-    <div className="bg-primary border border-white/5 rounded-2xl p-10 overflow-hidden relative flex flex-col justify-between shadow-2xl">
-      <div className="absolute inset-0 z-[-1]">
-        <img 
-          className="w-full h-full object-cover grayscale opacity-20" 
-          alt="Modern workspace" 
-          src="https://images.unsplash.com/photo-1497215728101-856f4ea42174?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" 
-        />
-      </div>
-      
-      <div className="relative z-10">
-        <div className="flex flex-col items-center mb-12 text-center">
-          <div className="inline-flex items-center gap-3 mb-4 opacity-50">
-            <div className="h-[1px] w-8 bg-neon-blue/50"></div>
-            <Sparkles className="w-3 h-3 text-neon-blue" />
-            <div className="h-[1px] w-8 bg-neon-blue/50"></div>
-          </div>
-          <h2 className="text-xl md:text-2xl font-black text-white font-headline tracking-tight leading-none mb-3">
-            MÉTRICAS DA <span className="text-neon-blue">UTILIZAÇÃO</span> DOS LINKS
-          </h2>
-          <p className="text-white/30 text-[9px] font-bold tracking-[0.4em] uppercase">
-            Inteligência Digital • Performance em Tempo Real
-          </p>
-        </div>
+const Insights = ({ links, categories }: { links: any[], categories: any[] }) => {
+  const totalLinks = links.length;
+  const totalCategories = categories.length;
+  const featuredLinks = links.filter(l => l.isFeatured).length;
+  
+  // Cálculo de porcentagens para as barras de progresso (exemplo baseado em metas)
+  const indexacao = Math.min(Math.round((totalLinks / 50) * 100), 100);
+  const curadoria = Math.min(Math.round((featuredLinks / (totalLinks || 1)) * 100), 100);
+  const otimizacao = Math.min(Math.round((totalCategories / 15) * 100), 100);
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {[
-            { label: 'LINKS TOTAIS', value: '24', sub: '+12% este mês', icon: Sparkles, color: 'text-neon-blue' },
-            { label: 'CLIQUES ÚNICOS', value: '1.2k', sub: 'Média diária 42', icon: Briefcase, color: 'text-neon-green' },
-            { label: 'CATEGORIAS', value: '8', sub: 'Filtros ativos', icon: FolderHeart, color: 'text-neon-yellow' },
-            { label: 'UPTIME HUB', value: '99.9%', sub: 'Sincronizado', icon: Globe, color: 'text-neon-blue' },
-          ].map((stat, i) => (
-            <div key={i} className="bg-white/5 border border-white/10 p-5 rounded-2xl backdrop-blur-md hover:bg-white/10 transition-all group">
-              <div className="flex justify-between items-start mb-3">
-                <stat.icon className={`w-5 h-5 ${stat.color} opacity-80 group-hover:opacity-100 transition-opacity`} />
-                <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{i + 1}</span>
-              </div>
-              <div className="text-2xl font-black text-white mb-1 leading-none">{stat.value}</div>
-              <div className="text-[11px] font-bold text-white mb-0.5 leading-tight">{stat.label}</div>
-              <div className="text-[9px] font-medium text-white/50 uppercase tracking-tighter">{stat.sub}</div>
+  return (
+    <div className="mt-16 mb-12">
+      <div className="bg-primary border border-white/5 rounded-2xl p-10 overflow-hidden relative flex flex-col justify-between shadow-2xl">
+        <div className="absolute inset-0 z-[-1]">
+          <img 
+            className="w-full h-full object-cover grayscale opacity-20" 
+            alt="Modern workspace" 
+            src="https://images.unsplash.com/photo-1497215728101-856f4ea42174?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" 
+          />
+        </div>
+        
+        <div className="relative z-10">
+          <div className="flex flex-col items-center mb-12 text-center">
+            <div className="inline-flex items-center gap-3 mb-4 opacity-50">
+              <div className="h-[1px] w-8 bg-neon-blue/50"></div>
+              <Sparkles className="w-3 h-3 text-neon-blue" />
+              <div className="h-[1px] w-8 bg-neon-blue/50"></div>
             </div>
-          ))}
-        </div>
-      </div>
-      
-      <div className="relative z-10 mt-12 pt-8 border-t border-white/5 flex flex-wrap justify-center gap-8 md:gap-16">
-        <div className="flex items-center gap-4">
-          <div className="h-1.5 w-28 bg-white/5 rounded-full overflow-hidden">
-            <div className="h-full bg-neon-blue w-[85%] shadow-[0_0_8px_rgba(0,210,255,0.6)]"></div>
+            <h2 className="text-xl md:text-2xl font-black text-white font-headline tracking-tight leading-none mb-3">
+              MÉTRICAS DA <span className="text-neon-blue">UTILIZAÇÃO</span> DOS LINKS
+            </h2>
+            <p className="text-white/30 text-[9px] font-bold tracking-[0.4em] uppercase">
+              Inteligência Digital • Performance em Tempo Real
+            </p>
           </div>
-          <span className="text-[9px] font-bold text-white/40 uppercase tracking-[0.2em]">Indexação 85%</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="h-1.5 w-28 bg-white/5 rounded-full overflow-hidden">
-            <div className="h-full bg-neon-green w-[62%] shadow-[0_0_8px_rgba(57,255,20,0.6)]"></div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {[
+              { label: 'LINKS TOTAIS', value: totalLinks.toString(), sub: 'Recursos ativos no Vault', icon: Sparkles, color: 'text-neon-blue' },
+              { label: 'EM DESTAQUE', value: featuredLinks.toString(), sub: 'Links com alta prioridade', icon: Briefcase, color: 'text-neon-green' },
+              { label: 'CATEGORIAS', value: totalCategories.toString(), sub: 'Filtros de organização', icon: FolderHeart, color: 'text-neon-yellow' },
+              { label: 'UPTIME HUB', value: '99.9%', sub: 'Sincronizado via PB', icon: Globe, color: 'text-neon-blue' },
+            ].map((stat, i) => (
+              <div key={i} className="bg-white/5 border border-white/10 p-5 rounded-2xl backdrop-blur-md hover:bg-white/10 transition-all group">
+                <div className="flex justify-between items-start mb-3">
+                  <stat.icon className={`w-5 h-5 ${stat.color} opacity-80 group-hover:opacity-100 transition-opacity`} />
+                  <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{i + 1}</span>
+                </div>
+                <div className="text-2xl font-black text-white mb-1 leading-none">{stat.value}</div>
+                <div className="text-[11px] font-bold text-white mb-0.5 leading-tight">{stat.label}</div>
+                <div className="text-[9px] font-medium text-white/50 uppercase tracking-tighter">{stat.sub}</div>
+              </div>
+            ))}
           </div>
-          <span className="text-[9px] font-bold text-white/40 uppercase tracking-[0.2em]">Curadoria 62%</span>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="h-1.5 w-28 bg-white/5 rounded-full overflow-hidden">
-            <div className="h-full bg-neon-yellow w-[38%] shadow-[0_0_8px_rgba(255,240,31,0.6)]"></div>
+        
+        <div className="relative z-10 mt-12 pt-8 border-t border-white/5 flex flex-wrap justify-center gap-8 md:gap-16">
+          <div className="flex items-center gap-4">
+            <div className="h-1.5 w-28 bg-white/5 rounded-full overflow-hidden">
+              <div className="h-full bg-neon-blue transition-all duration-1000" style={{ width: `${indexacao}%`, boxShadow: '0 0 8px rgba(0,210,255,0.6)' }}></div>
+            </div>
+            <span className="text-[9px] font-bold text-white/40 uppercase tracking-[0.2em]">Indexação {indexacao}%</span>
           </div>
-          <span className="text-[9px] font-bold text-white/40 uppercase tracking-[0.2em]">Otimização 38%</span>
+          <div className="flex items-center gap-4">
+            <div className="h-1.5 w-28 bg-white/5 rounded-full overflow-hidden">
+              <div className="h-full bg-neon-green transition-all duration-1000" style={{ width: `${curadoria}%`, boxShadow: '0 0 8px rgba(57,255,20,0.6)' }}></div>
+            </div>
+            <span className="text-[9px] font-bold text-white/40 uppercase tracking-[0.2em]">Curadoria {curadoria}%</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="h-1.5 w-28 bg-white/5 rounded-full overflow-hidden">
+              <div className="h-full bg-neon-yellow transition-all duration-1000" style={{ width: `${otimizacao}%`, boxShadow: '0 0 8px rgba(255,240,31,0.6)' }}></div>
+            </div>
+            <span className="text-[9px] font-bold text-white/40 uppercase tracking-[0.2em]">Otimização {otimizacao}%</span>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const Footer = () => {
   const projectName = import.meta.env.VITE_PROJECT_NAME || "PORTAL DE LINKS DAPS";
@@ -925,6 +940,12 @@ export default function App() {
         'neon-yellow': "border-neon-yellow/50 shadow-[0_0_15px_rgba(255,240,31,0.4)]"
       };
 
+      const iconColors: Record<string, string> = {
+        'neon-green': "text-neon-green",
+        'neon-blue': "text-neon-blue",
+        'neon-yellow': "text-neon-yellow"
+      };
+
       // Mapear dados do PB para o formato do App
       const formattedLinks = linkRecords.map(record => ({
         id: record.id,
@@ -939,12 +960,20 @@ export default function App() {
         tags: [catRecords.find(c => c.id === record.category)?.name || 'Sem Categoria'],
         isFeatured: record.is_featured,
         order: record.order,
+        iconColor: record.custom_color ? '' : (iconColors[record.color_preset] || 'text-white'),
         glowColor: record.custom_color ? '' : (colorGlows[record.color_preset] || '')
       }));
       
       setLinks(formattedLinks);
-    } catch (error) {
-      console.error("Erro ao carregar dados:", error);
+    } catch (error: any) {
+      // Ignorar erro de autocancelamento (comum no React StrictMode)
+      if (error?.isAbort) return;
+      
+      if (error?.status === 403) {
+        console.error("Erro de Permissão: Verifique se as regras da API no PocketBase estão abertas (Públicas) para as coleções.");
+      } else {
+        console.error("Erro ao carregar dados:", error);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -999,7 +1028,10 @@ export default function App() {
       await fetchData(); // Recarregar dados
       setIsModalOpen(false);
       setEditingLink(null);
-    } catch (error) {
+    } catch (error: any) {
+      if (error.data) {
+        console.error("Erro de validação do PocketBase (verifique os campos):", error.data);
+      }
       console.error("Erro ao salvar link:", error);
     }
   };
@@ -1170,7 +1202,7 @@ export default function App() {
           </div>
         </Reorder.Group>
         
-        <Insights />
+        <Insights links={links} categories={categories} />
       </main>
       <Footer />
     </div>
