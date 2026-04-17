@@ -1041,7 +1041,7 @@ const AuthModal = ({ config, onClose, onSuccess }: { config: any, onClose: () =>
 
 const iconMap: any = { Sparkles, Code, Briefcase, PenTool, Globe, FolderHeart };
 
-const DraggableLinkItem = ({ link, dragEnabled, onEdit, onDelete }: { link: any, dragEnabled: boolean, onEdit: () => void, onDelete: () => void }) => {
+const DraggableLinkItem: React.FC<{ link: any, dragEnabled: boolean, onEdit: () => void, onDelete: () => void }> = ({ link, dragEnabled, onEdit, onDelete }) => {
   const controls = useDragControls();
 
   return (
