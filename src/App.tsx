@@ -1367,10 +1367,13 @@ export default function App() {
             const isOrderChanged = JSON.stringify(newOrder.map(l => l.id)) !== JSON.stringify(filteredLinks.map(l => l.id));
             if (!isOrderChanged) return;
 
+            // Criar uma cópia isolada da nova ordem para o estado local
+            const newOrderSnapshot = [...newOrder];
+
             let updatedLinks = [...links];
 
             if (activeFilter === 'Todos os Links') {
-              updatedLinks = newOrder;
+              updatedLinks = newOrderSnapshot;
             } else {
               // Reordenação dentro de uma categoria
               // 1. Encontrar os índices originais dos links filtrados na lista global
@@ -1379,12 +1382,12 @@ export default function App() {
                 .filter(index => index !== -1);
               
               // 2. Substituir os links nesses índices pela nova ordem
-              newOrder.forEach((link, i) => {
+              newOrderSnapshot.forEach((link, i) => {
                 updatedLinks[filteredIndices[i]] = link;
               });
             }
 
-            // Atualização local imediata para fluidez
+            // Atualização local imediata para fluidez visual e evitar glitches
             setLinks(updatedLinks);
 
             // Persistir nova ordem no PocketBase
@@ -1395,11 +1398,11 @@ export default function App() {
               await Promise.all(updates);
             } catch (error) {
               console.error("Erro ao salvar nova ordem:", error);
+              // Apenas em caso de erro, recarregamos para forçar a sincronia
               await fetchData();
             }
           }}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-          layoutScroll
         >
           <AnimatePresence mode="popLayout">
             {filteredLinks.map((link) => (
