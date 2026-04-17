@@ -1,0 +1,63 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Inter:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #001f3f;
+  --color-primary-dim: #00152a;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #002b5b;
+  --color-on-primary-container: #e6f0ff;
+  --color-secondary: #003366;
+  --color-secondary-dim: #002b5b;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #001d3d;
+  --color-on-secondary-container: #ffffff;
+  --color-tertiary: #004080;
+  --color-tertiary-dim: #003366;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #0059b3;
+  --color-on-tertiary-container: #ffffff;
+  --color-error: #b41340;
+  --color-on-error: #ffffff;
+  --color-background: #f8fafc;
+  --color-on-background: #001f3f;
+  --color-surface: #ffffff;
+  --color-on-surface: #001f3f;
+  --color-surface-variant: #f1f5f9;
+  --color-on-surface-variant: #475569;
+  --color-outline: #94a3b8;
+  --color-outline-variant: #e2e8f0;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f8fafc;
+  --color-surface-container: #f1f5f9;
+  --color-surface-container-high: #e2e8f0;
+  --color-surface-container-highest: #cbd5e0;
+  --color-surface-bright: #ffffff;
+  --color-inverse-surface: #001f3f;
+  --color-inverse-on-surface: #f8fafc;
+  --color-inverse-primary: #e6f0ff;
+
+  --color-neon-green: #39FF14;
+  --color-neon-yellow: #FFF01F;
+  --color-neon-blue: #00D2FF;
+
+  --font-headline: "Manrope", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-label: "Inter", sans-serif;
+}
+
+body {
+  font-family: var(--font-body);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-headline);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
