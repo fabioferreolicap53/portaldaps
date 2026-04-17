@@ -1342,7 +1342,6 @@ export default function App() {
         />
         
         <Reorder.Group 
-          axis="y" 
           values={filteredLinks} 
           onReorder={async (newOrder) => {
             // Só permite reordenar se não houver filtros ou busca ativos
