@@ -28,6 +28,7 @@ const Header = ({ onOpenModal, searchQuery, onSearchChange }: {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               className="absolute inset-0 z-20 bg-primary flex items-center px-4 lg:hidden"
+              style={{ willChange: "transform, opacity" }}
             >
               <div className="relative flex-grow flex items-center">
                 <Search className="absolute left-4 text-neon-blue w-4 h-4" />
@@ -108,7 +109,7 @@ const Header = ({ onOpenModal, searchQuery, onSearchChange }: {
   );
 };
 
-const LinkModal = ({ isOpen, onClose, onSave, categories, onAddCategory, onRemoveCategory, onEditCategory, editLink }: { 
+const LinkModal = ({ isOpen, onClose, onSave, categories, onAddCategory, onRemoveCategory, onEditCategory, editLink, activeCategory }: { 
   isOpen: boolean, 
   onClose: () => void, 
   onSave: (link: any) => void,
@@ -116,13 +117,14 @@ const LinkModal = ({ isOpen, onClose, onSave, categories, onAddCategory, onRemov
   onAddCategory: (category: string) => void,
   onRemoveCategory: (category: string) => void,
   onEditCategory: (oldName: string, newName: string) => void,
-  editLink?: any
+  editLink?: any,
+  activeCategory?: string
 }) => {
   const [formData, setFormData] = useState({
     title: editLink?.title || '',
     url: editLink?.url || '',
     description: editLink?.description || '',
-    category: editLink?.tags?.[0] || categories[0] || 'Trabalho',
+    category: editLink?.tags?.[0] || (activeCategory && activeCategory !== 'Todos os Links' ? activeCategory : categories[0]) || 'Trabalho',
     icon: editLink?.iconName || (editLink?.isMaterialIcon ? editLink?.icon : 'Sparkles'),
     isMaterialIcon: editLink?.isMaterialIcon || false,
     color: editLink?.color || 'neon-green',
@@ -159,7 +161,7 @@ const LinkModal = ({ isOpen, onClose, onSave, categories, onAddCategory, onRemov
           title: prev.title || '',
           url: prev.url || '',
           description: prev.description || '',
-          category: prev.category || categories[0] || 'Trabalho',
+          category: prev.category || (activeCategory && activeCategory !== 'Todos os Links' ? activeCategory : categories[0]) || 'Trabalho',
           icon: prev.icon || 'Sparkles',
           isMaterialIcon: prev.isMaterialIcon || false,
           color: prev.color || 'neon-green',
@@ -172,7 +174,7 @@ const LinkModal = ({ isOpen, onClose, onSave, categories, onAddCategory, onRemov
         title: '',
         url: '',
         description: '',
-        category: categories[0] || 'Trabalho',
+        category: (activeCategory && activeCategory !== 'Todos os Links' ? activeCategory : categories[0]) || 'Trabalho',
         icon: 'Sparkles',
         isMaterialIcon: false,
         color: 'neon-green',
@@ -181,14 +183,14 @@ const LinkModal = ({ isOpen, onClose, onSave, categories, onAddCategory, onRemov
       setIconSearch('');
       setIsFeatured(false);
     }
-  }, [isOpen, editLink]);
+  }, [isOpen, editLink, activeCategory]);
 
   // Atualizar apenas a categoria se ela mudar na lista (sem resetar o resto)
   React.useEffect(() => {
     if (isOpen && !editLink && categories.length > 0 && !formData.category) {
-      setFormData(prev => ({ ...prev, category: categories[0] }));
+      setFormData(prev => ({ ...prev, category: (activeCategory && activeCategory !== 'Todos os Links' ? activeCategory : categories[0]) }));
     }
-  }, [categories, isOpen, editLink]);
+  }, [categories, isOpen, editLink, activeCategory]);
 
   const lucideIcons = [
     { name: 'Sparkles', component: Sparkles },
@@ -582,7 +584,7 @@ const FilterChips = ({ categories, activeFilter, onFilterChange }: { categories:
       <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-background via-background/80 to-transparent z-10 pointer-events-none opacity-100 transition-opacity"></div>
       <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-background via-background/80 to-transparent z-10 pointer-events-none opacity-100 transition-opacity"></div>
       
-      <div className="overflow-x-auto custom-scrollbar-hide flex items-center scroll-smooth w-full">
+      <div className="overflow-x-auto custom-scrollbar-hide flex items-center scroll-smooth w-full overscroll-x-contain touch-pan-x will-change-scroll transform-gpu">
         <div className="flex items-center gap-3 md:gap-4 py-4 px-6 md:px-8 w-max">
           {['Todos os Links', ...categories].map((filter) => (
             <button
@@ -600,6 +602,7 @@ const FilterChips = ({ categories, activeFilter, onFilterChange }: { categories:
                   layoutId="activeFilter"
                   className="absolute inset-0 bg-neon-blue rounded-xl md:rounded-2xl -z-10 shadow-[0_0_30px_rgba(0,210,255,0.3)]"
                   transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  style={{ willChange: "transform, opacity" }}
                 />
               )}
             </button>
@@ -710,6 +713,7 @@ const LinkCard = ({
                 ease: "easeInOut" 
               }}
               className="flex items-center gap-1.5 bg-neon-blue/20 backdrop-blur-md border border-neon-blue/30 px-3 py-1 rounded-full shadow-[0_0_15px_rgba(0,210,255,0.2)]"
+              style={{ willChange: "transform" }}
             >
               <Sparkles className="w-3 h-3 text-neon-blue animate-pulse" />
               <span className="text-[8px] font-black text-neon-blue uppercase tracking-[0.2em]">Destaque</span>
@@ -1047,7 +1051,7 @@ const DraggableLinkItem = ({ link, dragEnabled, onEdit, onDelete }: { link: any,
       dragListener={false}
       dragControls={controls}
       className="relative bg-primary rounded-2xl"
-      style={{ zIndex: 0 }}
+      style={{ zIndex: 0, willChange: "transform" }}
       drag
       whileDrag={{ scale: 1.05, zIndex: 50, cursor: "grabbing" }}
     >
@@ -1318,6 +1322,7 @@ export default function App() {
         onRemoveCategory={handleRemoveCategory}
         onEditCategory={handleEditCategory}
         editLink={editingLink}
+        activeCategory={activeFilter}
       />
       
       <main className="pt-24 md:pt-32 px-6 md:px-12 pb-24 max-w-[1600px] mx-auto">
