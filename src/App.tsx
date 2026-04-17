@@ -18,8 +18,8 @@ const Header = ({ onOpenModal, searchQuery, onSearchChange }: {
   const projectSubtitle = import.meta.env.VITE_SUBTITLE || "Coordenação CAP 5.3";
 
   return (
-    <header className="fixed top-0 right-0 left-0 h-20 z-50 bg-primary/95 backdrop-blur-md border-b border-white/10 shadow-2xl transition-all duration-300">
-      <div className="h-full max-w-[1600px] mx-auto px-6 md:px-12 flex items-center justify-between relative">
+    <header className="fixed top-0 right-0 left-0 h-16 md:h-20 z-50 bg-primary/95 backdrop-blur-md border-b border-white/10 shadow-2xl transition-all duration-300">
+      <div className="h-full max-w-[1600px] mx-auto px-4 md:px-12 flex items-center justify-between gap-4 md:gap-8 relative">
         {/* Mobile Search Overlay */}
         <AnimatePresence>
           {isMobileSearchOpen && (
@@ -27,13 +27,13 @@ const Header = ({ onOpenModal, searchQuery, onSearchChange }: {
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="absolute inset-0 z-20 bg-primary flex items-center px-6 sm:hidden"
+              className="absolute inset-0 z-20 bg-primary flex items-center px-4 lg:hidden"
             >
               <div className="relative flex-grow flex items-center">
                 <Search className="absolute left-4 text-neon-blue w-4 h-4" />
                 <input 
                   autoFocus
-                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-12 py-3 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-blue/50" 
+                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-12 py-2.5 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-blue/50" 
                   placeholder="Pesquisar..." 
                   type="text" 
                   value={searchQuery}
@@ -55,19 +55,19 @@ const Header = ({ onOpenModal, searchQuery, onSearchChange }: {
 
         {/* Logo Section - Left */}
         <div className={`flex flex-col shrink-0 z-10 transition-opacity duration-300 ${isMobileSearchOpen ? 'opacity-0' : 'opacity-100'}`}>
-          <span className="text-xl md:text-2xl font-black tracking-tighter text-white font-headline leading-none">
+          <span className="text-sm md:text-2xl font-black tracking-tighter text-white font-headline leading-none">
             {projectName.split(' ').slice(0, -1).join(' ')} <span className="text-neon-blue">{projectName.split(' ').pop()}</span>
           </span>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="h-[1px] w-4 bg-neon-blue/50"></span>
-            <span className="text-[8px] md:text-[10px] font-bold tracking-[0.2em] text-white/60 uppercase font-inter">
+          <div className="flex items-center gap-2 mt-0.5 md:mt-1">
+            <span className="h-[1px] w-3 md:w-4 bg-neon-blue/50"></span>
+            <span className="text-[7px] md:text-[10px] font-bold tracking-[0.15em] md:tracking-[0.2em] text-white/60 uppercase font-inter whitespace-nowrap">
               {projectSubtitle}
             </span>
           </div>
         </div>
 
-        {/* Search Bar - Absolutely Centered (Desktop & Tablet) */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md px-6 hidden sm:block">
+        {/* Search Bar - Flexible Center (Desktop) */}
+        <div className="flex-grow max-w-xl px-4 hidden lg:block">
           <div className="relative group transition-all duration-300">
             <div className="absolute -inset-1 bg-gradient-to-r from-neon-blue/20 to-neon-blue/0 rounded-xl blur opacity-0 group-focus-within:opacity-100 transition duration-500"></div>
             <div className="relative flex items-center bg-white/5 border border-white/10 rounded-xl overflow-hidden focus-within:border-neon-blue/50 focus-within:bg-white/10 transition-all">
@@ -84,23 +84,23 @@ const Header = ({ onOpenModal, searchQuery, onSearchChange }: {
         </div>
 
         {/* Action Buttons - Right */}
-        <div className={`flex items-center gap-3 shrink-0 z-10 transition-opacity duration-300 ${isMobileSearchOpen ? 'opacity-0' : 'opacity-100'}`}>
+        <div className={`flex items-center gap-2 md:gap-3 shrink-0 z-10 transition-opacity duration-300 ${isMobileSearchOpen ? 'opacity-0' : 'opacity-100'}`}>
           {/* Mobile Search Toggle */}
           <button 
             onClick={() => setIsMobileSearchOpen(true)}
-            className="sm:hidden p-3 rounded-xl bg-white/5 border border-white/10 text-white/60 hover:text-white transition-all active:scale-95"
+            className="lg:hidden p-2.5 rounded-xl bg-white/5 border border-white/10 text-white/60 hover:text-white transition-all active:scale-95"
           >
-            <Search className="w-5 h-5" />
+            <Search className="w-4 h-4" />
           </button>
 
           <button 
             onClick={onOpenModal}
-            className="group relative overflow-hidden bg-neon-blue text-primary text-[10px] font-black px-4 md:px-6 py-3 rounded-xl flex items-center gap-2 md:gap-2.5 transition-all duration-300 active:scale-95 shadow-[0_0_20px_rgba(0,210,255,0.3)] hover:shadow-[0_0_35px_rgba(0,210,255,0.6)] hover:bg-white uppercase tracking-[0.1em] md:tracking-[0.15em]"
+            className="group relative overflow-hidden bg-neon-blue text-primary text-[9px] md:text-[10px] font-black px-3 md:px-6 py-2.5 md:py-3 rounded-xl flex items-center gap-1.5 md:gap-2.5 transition-all duration-300 active:scale-95 shadow-[0_0_15px_rgba(0,210,255,0.2)] md:shadow-[0_0_20px_rgba(0,210,255,0.3)] hover:shadow-[0_0_35px_rgba(0,210,255,0.6)] hover:bg-white uppercase tracking-[0.1em] md:tracking-[0.15em]"
           >
             <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-            <PlusCircle className="w-4 h-4 relative z-10" />
-            <span className="relative z-10 hidden xs:inline">NOVO LINK</span>
-            <span className="relative z-10 xs:hidden">NOVO</span>
+            <Plus className="w-3.5 h-3.5 relative z-10" />
+            <span className="relative z-10">NOVO</span>
+            <span className="relative z-10 hidden xs:inline">LINK</span>
           </button>
         </div>
       </div>
@@ -135,22 +135,39 @@ const LinkModal = ({ isOpen, onClose, onSave, categories, onAddCategory, onRemov
   const [editingValue, setEditingValue] = useState('');
   const [isFeatured, setIsFeatured] = useState(editLink?.isFeatured || false);
 
-  // Sincronizar dados ao abrir para edição
+  // Sincronizar dados ao abrir para edição ou quando o modal é aberto pela primeira vez
   React.useEffect(() => {
-    if (editLink) {
-      setFormData({
-        title: editLink.title,
-        url: editLink.url,
-        description: editLink.description || '',
-        category: editLink.tags?.[0] || categories[0],
-        icon: editLink.isMaterialIcon ? editLink.icon : (editLink.iconName || 'Sparkles'),
-        isMaterialIcon: editLink.isMaterialIcon,
-        color: editLink.color || 'neon-green',
-        customColor: editLink.customColor || ''
-      });
-      setIconSearch(editLink.isMaterialIcon ? editLink.icon : '');
-      setIsFeatured(editLink.isFeatured || false);
+    if (isOpen) {
+      if (editLink) {
+        setFormData({
+          title: editLink.title,
+          url: editLink.url,
+          description: editLink.description || '',
+          category: editLink.tags?.[0] || categories[0],
+          icon: editLink.isMaterialIcon ? editLink.icon : (editLink.iconName || 'Sparkles'),
+          isMaterialIcon: editLink.isMaterialIcon,
+          color: editLink.color || 'neon-green',
+          customColor: editLink.customColor || ''
+        });
+        setIconSearch(editLink.isMaterialIcon ? editLink.icon : '');
+        setIsFeatured(editLink.isFeatured || false);
+      } else {
+        // Se for um novo link, só reseta se os campos estiverem vazios (indicando que acabou de abrir)
+        // ou se categories mudou e ainda não temos uma categoria selecionada
+        setFormData(prev => ({
+          ...prev,
+          title: prev.title || '',
+          url: prev.url || '',
+          description: prev.description || '',
+          category: prev.category || categories[0] || 'Trabalho',
+          icon: prev.icon || 'Sparkles',
+          isMaterialIcon: prev.isMaterialIcon || false,
+          color: prev.color || 'neon-green',
+          customColor: prev.customColor || ''
+        }));
+      }
     } else {
+      // Limpa o formulário quando o modal fecha para a próxima abertura
       setFormData({
         title: '',
         url: '',
@@ -164,7 +181,14 @@ const LinkModal = ({ isOpen, onClose, onSave, categories, onAddCategory, onRemov
       setIconSearch('');
       setIsFeatured(false);
     }
-  }, [editLink, categories]);
+  }, [isOpen, editLink]);
+
+  // Atualizar apenas a categoria se ela mudar na lista (sem resetar o resto)
+  React.useEffect(() => {
+    if (isOpen && !editLink && categories.length > 0 && !formData.category) {
+      setFormData(prev => ({ ...prev, category: categories[0] }));
+    }
+  }, [categories, isOpen, editLink]);
 
   const lucideIcons = [
     { name: 'Sparkles', component: Sparkles },
@@ -196,18 +220,51 @@ const LinkModal = ({ isOpen, onClose, onSave, categories, onAddCategory, onRemov
         </div>
 
         <div className="p-6 overflow-y-auto space-y-4 custom-scrollbar">
-          {/* Status de Destaque */}
-          <div className="flex items-center justify-between p-4 bg-white/[0.03] border border-white/10 rounded-2xl mb-4">
-            <div>
-              <span className="text-[10px] font-black text-white/80 uppercase tracking-[0.2em] block">Status de Destaque</span>
-              <p className="text-white/40 text-[9px] uppercase tracking-widest mt-0.5">Destacar visualmente este recurso</p>
+          {/* Status de Destaque Premium */}
+          <div 
+            onClick={() => setIsFeatured(!isFeatured)}
+            className={`group relative flex items-center justify-between p-5 rounded-2xl border transition-all duration-500 cursor-pointer overflow-hidden mb-6 ${
+              isFeatured 
+                ? 'bg-neon-blue/10 border-neon-blue/30 shadow-[0_0_25px_rgba(0,210,255,0.15)]' 
+                : 'bg-white/[0.02] border-white/5 hover:border-white/10'
+            }`}
+          >
+            {/* Background Glow Effect */}
+            <div className={`absolute inset-0 bg-gradient-to-r from-neon-blue/10 to-transparent transition-opacity duration-500 ${isFeatured ? 'opacity-100' : 'opacity-0'}`}></div>
+            
+            <div className="relative z-10 flex items-center gap-4">
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-500 ${
+                isFeatured ? 'bg-neon-blue text-primary shadow-[0_0_20px_rgba(0,210,255,0.5)] scale-110' : 'bg-white/5 text-white/20'
+              }`}>
+                <Sparkles className={`w-6 h-6 ${isFeatured ? 'animate-pulse' : ''}`} />
+              </div>
+              <div>
+                <span className={`text-[10px] font-black uppercase tracking-[0.2em] block transition-colors duration-500 ${
+                  isFeatured ? 'text-neon-blue' : 'text-white/80'
+                }`}>
+                  Status de Destaque
+                </span>
+                <p className="text-white/30 text-[9px] font-bold uppercase tracking-widest mt-1">
+                  {isFeatured ? 'Este recurso terá visibilidade prioritária' : 'Tornar este link um recurso em destaque'}
+                </p>
+              </div>
             </div>
-            <button 
-              onClick={() => setIsFeatured(!isFeatured)}
-              className={`w-12 h-6 rounded-full transition-all duration-500 relative ${isFeatured ? 'bg-neon-blue shadow-[0_0_15px_rgba(0,210,255,0.4)]' : 'bg-white/10'}`}
-            >
-              <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all duration-500 ${isFeatured ? 'left-7' : 'left-1'}`}></div>
-            </button>
+
+            <div className="relative z-10">
+              <div className={`w-14 h-7 rounded-full p-1 transition-all duration-500 flex items-center ${
+                isFeatured ? 'bg-neon-blue shadow-[0_0_15px_rgba(0,210,255,0.3)]' : 'bg-white/10'
+              }`}>
+                <motion.div 
+                  layout
+                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  className={`w-5 h-5 rounded-full shadow-lg flex items-center justify-center ${
+                    isFeatured ? 'bg-white ml-auto' : 'bg-white/20'
+                  }`}
+                >
+                  {isFeatured && <Check className="w-3 h-3 text-neon-blue" />}
+                </motion.div>
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -231,6 +288,17 @@ const LinkModal = ({ isOpen, onClose, onSave, categories, onAddCategory, onRemov
                 onChange={(e) => setFormData({...formData, url: e.target.value})}
               />
             </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-black text-white/80 uppercase tracking-[0.2em] ml-1">Descrição do Link (Detalhes)</label>
+            <textarea 
+              placeholder="Descreva brevemente para que serve este recurso..."
+              rows={3}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/40 focus:border-neon-blue/50 focus:ring-4 focus:ring-neon-blue/5 outline-none transition-all resize-none custom-scrollbar"
+              value={formData.description}
+              onChange={(e) => setFormData({...formData, description: e.target.value})}
+            />
           </div>
 
           {/* Seção de Identidade Visual acima */}
@@ -566,6 +634,7 @@ interface LinkCardProps {
   glowColor?: string;
   title: string;
   url: string;
+  description?: string;
   tags: string[];
   isFeatured?: boolean;
   isMaterialIcon?: boolean;
@@ -581,6 +650,7 @@ const LinkCard = ({
   glowColor = '',
   title, 
   url, 
+  description = '',
   tags, 
   isFeatured = false,
   isMaterialIcon = false,
@@ -589,11 +659,25 @@ const LinkCard = ({
   onDelete,
   item
 }: LinkCardProps) => {
+  const [isCopied, setIsCopied] = useState(false);
+
   const handleCardClick = (e: React.MouseEvent) => {
-    // Só abre o link se não for clique nos botões de ação (tratado pelo stopPropagation)
+    // Só abre o link se não for clique nos botões de ação
     if (url) {
       const formattedUrl = url.startsWith('http') ? url : `https://${url}`;
       window.open(formattedUrl, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  const handleCopyLink = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const formattedUrl = url.startsWith('http') ? url : `https://${url}`;
+      await navigator.clipboard.writeText(formattedUrl);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      console.error('Falha ao copiar link:', err);
     }
   };
 
@@ -603,9 +687,9 @@ const LinkCard = ({
       id={item.id.toString()}
       layout
       onClick={handleCardClick}
-      className={`group rounded-2xl p-6 flex flex-col justify-between min-h-[230px] relative overflow-hidden border transition-all duration-500 cursor-pointer select-none ${
+      className={`group rounded-2xl p-5 md:p-7 flex flex-col justify-between min-h-[250px] relative overflow-hidden border transition-all duration-500 cursor-pointer select-none ${
         isFeatured 
-          ? 'bg-gradient-to-br from-primary-container to-primary border-white/20 shadow-xl' 
+          ? 'bg-[#0A1929] border-neon-blue/40 shadow-[0_0_20px_rgba(0,210,255,0.15)] ring-1 ring-neon-blue/20' 
           : 'bg-primary border-white/5 hover:border-white/10'
       } hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.6)]`}
       initial={{ opacity: 0, scale: 0.9 }}
@@ -624,24 +708,61 @@ const LinkCard = ({
         opacity: { duration: 0.3 }
       }}
     >
-      {/* Overlay de Brilho Suave */}
-      <div className="absolute inset-0 bg-gradient-to-tr from-neon-blue/0 via-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+      {/* Overlay de Brilho Suave para não destaque */}
+      {!isFeatured && (
+        <div className="absolute inset-0 bg-gradient-to-tr from-neon-blue/0 via-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+      )}
+
+      {/* Efeito de Fundo Exclusivo para Destaque */}
+      {isFeatured && (
+        <>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(0,210,255,0.15),transparent_70%)] pointer-events-none"></div>
+          <div className="absolute top-0 right-0 p-4 z-20">
+            <motion.div 
+              animate={{ 
+                rotate: [0, 5, -5, 0],
+                scale: [1, 1.1, 1]
+              }}
+              transition={{ 
+                duration: 4, 
+                repeat: Infinity,
+                ease: "easeInOut" 
+              }}
+              className="flex items-center gap-1.5 bg-neon-blue/20 backdrop-blur-md border border-neon-blue/30 px-3 py-1 rounded-full shadow-[0_0_15px_rgba(0,210,255,0.2)]"
+            >
+              <Sparkles className="w-3 h-3 text-neon-blue animate-pulse" />
+              <span className="text-[8px] font-black text-neon-blue uppercase tracking-[0.2em]">Destaque</span>
+            </motion.div>
+          </div>
+          {/* Animated Border Glow */}
+          <div className="absolute inset-0 border border-neon-blue/20 rounded-2xl animate-pulse pointer-events-none"></div>
+        </>
+      )}
 
       {/* Botões de Ação - Topo Direito */}
-      <div className="absolute top-4 right-4 flex gap-2 z-20 transition-all duration-500">
+      <div className="absolute top-4 right-4 flex gap-1.5 md:gap-2 z-20 transition-all duration-500">
+        <button 
+          onClick={handleCopyLink}
+          className={`p-2 md:p-2.5 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 transition-all active:scale-90 shadow-lg ${
+            isCopied ? 'text-neon-green border-neon-green/40' : 'text-white/40 hover:text-neon-blue hover:bg-white/10 hover:border-neon-blue/40'
+          } opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 duration-300`}
+          title="Copiar Link"
+        >
+          {isCopied ? <Check className="w-3.5 h-3.5 md:w-4 md:h-4" /> : <Copy className="w-3.5 h-3.5 md:w-4 md:h-4" />}
+        </button>
         <button 
           onClick={(e) => { e.stopPropagation(); onEdit(); }}
-          className="p-2.5 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 text-white/40 hover:text-neon-blue hover:bg-white/10 hover:border-neon-blue/40 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 shadow-lg"
+          className="p-2 md:p-2.5 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 text-white/40 hover:text-neon-blue hover:bg-white/10 hover:border-neon-blue/40 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 delay-[50ms] shadow-lg"
           title="Editar Recurso"
         >
-          <Edit2 className="w-4 h-4" />
+          <Edit2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
         </button>
         <button 
           onClick={(e) => { e.stopPropagation(); onDelete(); }}
-          className="p-2.5 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 text-white/40 hover:text-error hover:bg-error/10 hover:border-error/40 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 delay-[50ms] shadow-lg"
+          className="p-2 md:p-2.5 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 text-white/40 hover:text-error hover:bg-error/10 hover:border-error/40 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 delay-[100ms] shadow-lg"
           title="Excluir Recurso"
         >
-          <Trash2 className="w-4 h-4" />
+          <Trash2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
         </button>
       </div>
 
@@ -651,30 +772,37 @@ const LinkCard = ({
       </div>
 
       <div className="relative z-10 h-full flex flex-col justify-between">
-        <div>
+        <div className="space-y-4 md:space-y-5">
           <div 
-            className={`w-14 h-14 rounded-2xl flex items-center justify-center p-2 border-2 transition-all duration-500 bg-black/40 mb-5 ${glowColor} group-hover:scale-110 group-hover:rotate-3`}
+            className={`w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center p-2 border-2 transition-all duration-500 bg-black/40 ${glowColor} group-hover:scale-110 group-hover:rotate-3`}
             style={customColor ? { borderColor: `${customColor}80`, boxShadow: `0 0 20px ${customColor}30` } : {}}
           >
             {isMaterialIcon ? (
-              <span className="material-symbols-rounded text-3xl" style={customColor ? { color: customColor } : { color: 'inherit' }}>
+              <span className="material-symbols-rounded text-2xl md:text-3xl" style={customColor ? { color: customColor } : { color: 'inherit' }}>
                 {Icon}
               </span>
             ) : (
-              <Icon className={`w-7 h-7 ${iconColor}`} style={customColor ? { color: customColor } : {}} />
+              <Icon className={`w-6 h-6 md:w-7 md:h-7 ${iconColor}`} style={customColor ? { color: customColor } : {}} />
             )}
           </div>
           
-          <h3 className="text-xl font-black font-headline text-white mb-2 truncate group-hover:text-neon-blue transition-colors duration-300 tracking-tight">
-            {title}
-          </h3>
-          <p className="text-[11px] text-white/40 font-bold font-body mb-6 truncate uppercase tracking-[0.2em] flex items-center gap-2">
-            <Globe className="w-3 h-3 opacity-30" />
-            {url.replace('https://', '').replace('http://', '').split('/')[0]}
-          </p>
+          <div>
+            <h3 className="text-lg md:text-xl font-black font-headline text-white mb-2 leading-tight line-clamp-2 group-hover:text-neon-blue transition-colors duration-300 tracking-tight">
+              {title}
+            </h3>
+            {description && (
+              <p className="text-[11px] md:text-[12px] text-white/60 font-medium font-body mb-4 line-clamp-3 leading-relaxed">
+                {description}
+              </p>
+            )}
+            <p className="text-[10px] md:text-[11px] text-white/40 font-bold font-body truncate uppercase tracking-[0.2em] flex items-center gap-2">
+              <Globe className="w-3 h-3 opacity-30" />
+              {url.replace('https://', '').replace('http://', '').split('/')[0]}
+            </p>
+          </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1.5 md:gap-2 mt-6">
           {tags.map(tag => (
             <span key={tag} className="px-3 py-1 rounded-lg bg-white/5 border border-white/5 text-[9px] uppercase font-black tracking-widest text-white/30 group-hover:text-white/60 group-hover:border-white/10 transition-all">
               {tag}
@@ -684,7 +812,7 @@ const LinkCard = ({
       </div>
       
       {/* Indicador de Link - Canto Inferior Direito */}
-      <div className="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-500 pointer-events-none">
+      <div className="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-500 pointer-events-none hidden xs:block">
         <div className="p-2 rounded-full bg-neon-blue/10 border border-neon-blue/20 shadow-[0_0_15px_rgba(0,210,255,0.2)]">
           <ArrowRight className="w-4 h-4 text-neon-blue" />
         </div>
@@ -695,13 +823,13 @@ const LinkCard = ({
 
 const Insights = ({ links, categories }: { links: any[], categories: any[] }) => {
   const totalLinks = links.length;
-  const totalCategories = categories.length;
   const featuredLinks = links.filter(l => l.isFeatured).length;
   
-  // Cálculo de porcentagens para as barras de progresso (exemplo baseado em metas)
-  const indexacao = Math.min(Math.round((totalLinks / 50) * 100), 100);
-  const curadoria = Math.min(Math.round((featuredLinks / (totalLinks || 1)) * 100), 100);
-  const otimizacao = Math.min(Math.round((totalCategories / 15) * 100), 100);
+  // Contagem real de links por categoria (baseado nas tags dos links)
+  const categoryStats = categories.map(catName => ({
+    name: catName,
+    count: links.filter(l => l.tags && l.tags.includes(catName)).length
+  })).filter(stat => stat.count > 0); // Mostra apenas categorias que possuem links
 
   return (
     <div className="mt-16 mb-12">
@@ -733,7 +861,7 @@ const Insights = ({ links, categories }: { links: any[], categories: any[] }) =>
             {[
               { label: 'LINKS TOTAIS', value: totalLinks.toString(), sub: 'Recursos ativos no Vault', icon: Sparkles, color: 'text-neon-blue' },
               { label: 'EM DESTAQUE', value: featuredLinks.toString(), sub: 'Links com alta prioridade', icon: Briefcase, color: 'text-neon-green' },
-              { label: 'CATEGORIAS', value: totalCategories.toString(), sub: 'Filtros de organização', icon: FolderHeart, color: 'text-neon-yellow' },
+              { label: 'CATEGORIAS', value: categories.length.toString(), sub: 'Filtros de Organização', icon: FolderHeart, color: 'text-neon-yellow' },
               { label: 'UPTIME HUB', value: '99.9%', sub: 'Sincronizado via PB', icon: Globe, color: 'text-neon-blue' },
             ].map((stat, i) => (
               <div key={i} className="bg-white/5 border border-white/10 p-5 rounded-2xl backdrop-blur-md hover:bg-white/10 transition-all group">
@@ -749,24 +877,30 @@ const Insights = ({ links, categories }: { links: any[], categories: any[] }) =>
           </div>
         </div>
         
-        <div className="relative z-10 mt-12 pt-8 border-t border-white/5 flex flex-wrap justify-center gap-8 md:gap-16">
-          <div className="flex items-center gap-4">
-            <div className="h-1.5 w-28 bg-white/5 rounded-full overflow-hidden">
-              <div className="h-full bg-neon-blue transition-all duration-1000" style={{ width: `${indexacao}%`, boxShadow: '0 0 8px rgba(0,210,255,0.6)' }}></div>
-            </div>
-            <span className="text-[9px] font-bold text-white/40 uppercase tracking-[0.2em]">Indexação {indexacao}%</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="h-1.5 w-28 bg-white/5 rounded-full overflow-hidden">
-              <div className="h-full bg-neon-green transition-all duration-1000" style={{ width: `${curadoria}%`, boxShadow: '0 0 8px rgba(57,255,20,0.6)' }}></div>
-            </div>
-            <span className="text-[9px] font-bold text-white/40 uppercase tracking-[0.2em]">Curadoria {curadoria}%</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="h-1.5 w-28 bg-white/5 rounded-full overflow-hidden">
-              <div className="h-full bg-neon-yellow transition-all duration-1000" style={{ width: `${otimizacao}%`, boxShadow: '0 0 8px rgba(255,240,31,0.6)' }}></div>
-            </div>
-            <span className="text-[9px] font-bold text-white/40 uppercase tracking-[0.2em]">Otimização {otimizacao}%</span>
+        {/* Footer com Categorias Reais e suas Quantidades */}
+        <div className="relative z-10 mt-12 pt-8 border-t border-white/5">
+          <div className="flex flex-wrap justify-center gap-4 md:gap-8">
+            {categoryStats.length > 0 ? categoryStats.map((stat) => (
+              <div key={stat.name} className="flex items-center gap-3 group bg-white/5 border border-white/5 px-4 py-3 rounded-xl hover:border-neon-blue/30 hover:bg-neon-blue/5 transition-all">
+                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
+                  <FolderHeart className="w-4 h-4 text-neon-blue opacity-60 group-hover:opacity-100 transition-opacity" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-black text-white/30 uppercase tracking-widest group-hover:text-white/50 transition-colors">
+                    {stat.name}
+                  </span>
+                  <span className="text-xs font-black text-white group-hover:text-neon-blue transition-colors">
+                    {stat.count} <span className="text-[8px] text-white/20 ml-0.5">RECURSOS</span>
+                  </span>
+                </div>
+              </div>
+            )) : (
+              <div className="flex flex-col items-center gap-2 opacity-20">
+                <div className="h-[1px] w-12 bg-white"></div>
+                <p className="text-[9px] font-black text-white uppercase tracking-[0.4em]">Aguardando dados das categorias...</p>
+                <div className="h-[1px] w-12 bg-white"></div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -1208,6 +1342,7 @@ export default function App() {
                 glowColor={link.glowColor}
                 title={link.title} 
                 url={link.url} 
+                description={link.description}
                 tags={link.tags} 
                 isFeatured={link.isFeatured}
                 isMaterialIcon={link.isMaterialIcon}
