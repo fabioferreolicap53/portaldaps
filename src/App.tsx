@@ -712,15 +712,15 @@ const LinkCard = ({
                 repeat: Infinity,
                 ease: "easeInOut" 
               }}
-              className="flex items-center gap-1.5 bg-neon-blue/20 backdrop-blur-md border border-neon-blue/30 px-3 py-1 rounded-full shadow-[0_0_15px_rgba(0,210,255,0.2)]"
+              className="flex items-center gap-1.5 bg-neon-green/20 backdrop-blur-md border border-neon-green/30 px-3 py-1 rounded-full shadow-[0_0_15px_rgba(57,255,20,0.2)]"
               style={{ willChange: "transform" }}
             >
-              <Sparkles className="w-3 h-3 text-neon-blue animate-pulse" />
-              <span className="text-[8px] font-black text-neon-blue uppercase tracking-[0.2em]">Destaque</span>
+              <Sparkles className="w-3 h-3 text-neon-green animate-pulse" />
+              <span className="text-[8px] font-black text-neon-green uppercase tracking-[0.2em]">Destaque</span>
             </motion.div>
           </div>
           {/* Animated Border Glow */}
-          <div className="absolute inset-0 border border-neon-blue/20 rounded-2xl animate-pulse pointer-events-none"></div>
+          <div className="absolute inset-0 border border-neon-green/20 rounded-2xl animate-pulse pointer-events-none"></div>
         </>
       )}
 
