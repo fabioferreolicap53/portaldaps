@@ -3,7 +3,7 @@ import PocketBase from 'pocketbase';
 import {
   PlusCircle, FolderHeart, Search, Sparkles, Copy, Edit2, Code, Briefcase, PenTool, Globe, Plus, ArrowRight, X, Check, Trash2, GripVertical, AlertTriangle, Lock, Eye, EyeOff
 } from 'lucide-react';
-import { Reorder, AnimatePresence, motion } from 'framer-motion';
+import { Reorder, AnimatePresence, motion, useDragControls } from 'framer-motion';
 
 const pb = new PocketBase(import.meta.env.VITE_POCKETBASE_URL || 'https://centraldedados.dev.br');
 pb.autoCancellation(false); // Desativa o cancelamento automático para limpar o console
@@ -582,8 +582,8 @@ const FilterChips = ({ categories, activeFilter, onFilterChange }: { categories:
       <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-background via-background/80 to-transparent z-10 pointer-events-none opacity-100 transition-opacity"></div>
       <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-background via-background/80 to-transparent z-10 pointer-events-none opacity-100 transition-opacity"></div>
       
-      <div className="overflow-x-auto custom-scrollbar-hide flex items-center scroll-smooth">
-        <div className="flex items-center gap-3 md:gap-4 py-4 w-max min-w-full justify-center md:justify-start px-8">
+      <div className="overflow-x-auto custom-scrollbar-hide flex items-center scroll-smooth w-full">
+        <div className="flex items-center gap-3 md:gap-4 py-4 px-6 md:px-8 w-max">
           {['Todos os Links', ...categories].map((filter) => (
             <button
               key={filter}
@@ -626,6 +626,7 @@ interface LinkCardProps {
   onDelete: () => void;
   item: any;
   dragEnabled?: boolean;
+  dragControls?: any;
 }
 
 const LinkCard = ({ 
@@ -642,7 +643,8 @@ const LinkCard = ({
   onEdit,
   onDelete,
   item,
-  dragEnabled = true
+  dragEnabled = true,
+  dragControls
 }: LinkCardProps) => {
   const [isCopied, setIsCopied] = useState(false);
   const dragStartTime = React.useRef(0);
@@ -747,8 +749,14 @@ const LinkCard = ({
 
       {/* Grip de Arrastar - Topo Centro */}
       {dragEnabled && (
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-30 transition-opacity cursor-grab active:cursor-grabbing p-1 z-10">
-          <GripVertical className="w-4 h-4 text-white" />
+        <div 
+          onPointerDown={(e) => {
+            e.preventDefault();
+            dragControls?.start(e);
+          }}
+          className="absolute top-3 left-1/2 -translate-x-1/2 opacity-40 md:opacity-0 md:group-hover:opacity-40 transition-opacity cursor-grab active:cursor-grabbing p-3 z-30 touch-none"
+        >
+          <GripVertical className="w-5 h-5 text-white" />
         </div>
       )}
 
@@ -1027,6 +1035,43 @@ const AuthModal = ({ config, onClose, onSuccess }: { config: any, onClose: () =>
   );
 };
 
+const iconMap: any = { Sparkles, Code, Briefcase, PenTool, Globe, FolderHeart };
+
+const DraggableLinkItem = ({ link, dragEnabled, onEdit, onDelete }: { link: any, dragEnabled: boolean, onEdit: () => void, onDelete: () => void }) => {
+  const controls = useDragControls();
+
+  return (
+    <Reorder.Item
+      value={link}
+      id={link.id.toString()}
+      dragListener={false}
+      dragControls={controls}
+      className="relative bg-primary rounded-2xl"
+      style={{ zIndex: 0 }}
+      drag
+      whileDrag={{ scale: 1.05, zIndex: 50, cursor: "grabbing" }}
+    >
+      <LinkCard 
+        item={link}
+        dragEnabled={dragEnabled}
+        dragControls={controls}
+        icon={link.isMaterialIcon ? link.icon : iconMap[link.icon]} 
+        iconColor={link.iconColor} 
+        glowColor={link.glowColor}
+        title={link.title} 
+        url={link.url} 
+        description={link.description}
+        tags={link.tags} 
+        isFeatured={link.isFeatured}
+        isMaterialIcon={link.isMaterialIcon}
+        customColor={link.customColor}
+        onEdit={onEdit}
+        onDelete={onDelete}
+      />
+    </Reorder.Item>
+  );
+}
+
 export default function App() {
   const [links, setLinks] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
@@ -1127,8 +1172,6 @@ export default function App() {
       setIsLoading(false);
     }
   };
-
-  const iconMap: any = { Sparkles, Code, Briefcase, PenTool, Globe, FolderHeart };
   
   const requestOpenModal = (link: any = null) => {
     requireAuth(
@@ -1313,33 +1356,13 @@ export default function App() {
         >
           <AnimatePresence mode="popLayout">
             {filteredLinks.map((link) => (
-              <Reorder.Item
+              <DraggableLinkItem
                 key={link.id}
-                value={link}
-                id={link.id.toString()}
-                dragListener={activeFilter === 'Todos os Links' && searchQuery === ''}
-                className="relative bg-primary rounded-2xl"
-                style={{ zIndex: 0 }}
-                drag
-                whileDrag={{ scale: 1.05, zIndex: 50, cursor: "grabbing" }}
-              >
-                <LinkCard 
-                  item={link}
-                  dragEnabled={activeFilter === 'Todos os Links' && searchQuery === ''}
-                  icon={link.isMaterialIcon ? link.icon : iconMap[link.icon]} 
-                  iconColor={link.iconColor} 
-                  glowColor={link.glowColor}
-                  title={link.title} 
-                  url={link.url} 
-                  description={link.description}
-                  tags={link.tags} 
-                  isFeatured={link.isFeatured}
-                  isMaterialIcon={link.isMaterialIcon}
-                  customColor={link.customColor}
-                  onEdit={() => requestOpenModal(link)}
-                  onDelete={() => requestDeleteLink(link)}
-                />
-              </Reorder.Item>
+                link={link}
+                dragEnabled={activeFilter === 'Todos os Links' && searchQuery === ''}
+                onEdit={() => requestOpenModal(link)}
+                onDelete={() => requestDeleteLink(link)}
+              />
             ))}
           </AnimatePresence>
           
