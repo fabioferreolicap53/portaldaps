@@ -590,17 +590,17 @@ const FilterChips = ({ categories, activeFilter, onFilterChange }: { categories:
             <button
               key={filter}
               onClick={() => onFilterChange(filter)}
-              className={`relative px-5 md:px-8 py-3 md:py-3.5 rounded-xl md:rounded-2xl text-[10px] md:text-xs font-black uppercase tracking-[0.15em] md:tracking-[0.2em] transition-all duration-500 whitespace-nowrap border ${
+              className={`relative px-6 md:px-10 py-3.5 md:py-4 rounded-xl md:rounded-2xl text-[11px] md:text-[13px] font-black uppercase tracking-[0.15em] md:tracking-[0.2em] transition-all duration-500 whitespace-nowrap border ${
                 activeFilter === filter
-                  ? 'bg-neon-blue text-primary border-neon-blue shadow-[0_0_25px_rgba(0,210,255,0.4)] scale-105 z-20'
-                  : 'bg-white text-primary/40 border-white/5 hover:border-white/20 hover:text-primary/60 hover:scale-105 z-10 shadow-sm'
+                  ? 'bg-neon-blue text-primary border-neon-blue shadow-md scale-105 z-20'
+                  : 'bg-white text-primary/50 border-white/10 hover:border-white/30 hover:text-primary/80 hover:scale-105 z-10 shadow-sm'
               }`}
             >
               <span className="relative z-10">{filter}</span>
               {activeFilter === filter && (
                 <motion.div 
                   layoutId="activeFilter"
-                  className="absolute inset-0 bg-neon-blue rounded-xl md:rounded-2xl -z-10 shadow-[0_0_30px_rgba(0,210,255,0.3)]"
+                  className="absolute inset-0 bg-neon-blue rounded-xl md:rounded-2xl -z-10 shadow-sm"
                   transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                   style={{ willChange: "transform, opacity" }}
                 />
@@ -1083,7 +1083,9 @@ export default function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingLink, setEditingLink] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState('Todos os Links');
+  const [activeFilter, setActiveFilter] = useState(() => {
+    return localStorage.getItem('daps_active_category') || 'Todos os Links';
+  });
   const [isLoading, setIsLoading] = useState(true);
 
   const [authConfig, setAuthConfig] = useState<{
@@ -1263,12 +1265,19 @@ export default function App() {
     }
   };
 
+  const handleFilterChange = (filter: string) => {
+    setActiveFilter(filter);
+    localStorage.setItem('daps_active_category', filter);
+  };
+
   const handleRemoveCategory = async (catToRemove: string) => {
     try {
       const categoryId = categoryMap[catToRemove];
       await pb.collection('portaldelinks_categories').delete(categoryId);
       await fetchData();
-      if (activeFilter === catToRemove) setActiveFilter('Todos os Links');
+      if (activeFilter === catToRemove) {
+        handleFilterChange('Todos os Links');
+      }
     } catch (error) {
       console.error("Erro ao remover categoria:", error);
     }
@@ -1329,7 +1338,7 @@ export default function App() {
         <FilterChips 
           categories={categories} 
           activeFilter={activeFilter} 
-          onFilterChange={setActiveFilter} 
+          onFilterChange={handleFilterChange} 
         />
         
         <Reorder.Group 
