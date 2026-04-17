@@ -1123,7 +1123,8 @@ export default function App() {
       const catRecords = await pb.collection('portaldelinks_categories').getFullList({
         sort: 'name',
       });
-      setCategories(catRecords.map(c => c.name));
+      const sortedCategories = catRecords.map(c => c.name).sort((a, b) => a.localeCompare(b));
+      setCategories(sortedCategories);
       
       const map: Record<string, string> = {};
       catRecords.forEach(c => map[c.name] = c.id);
@@ -1344,18 +1345,35 @@ export default function App() {
         <Reorder.Group 
           values={filteredLinks} 
           onReorder={async (newOrder) => {
-            // Só permite reordenar se não houver filtros ou busca ativos
-            if (activeFilter !== 'Todos os Links' || searchQuery !== '') return;
+            // Só permite reordenar se não houver busca ativa
+            if (searchQuery !== '') return;
 
             const isOrderChanged = JSON.stringify(newOrder.map(l => l.id)) !== JSON.stringify(filteredLinks.map(l => l.id));
             if (!isOrderChanged) return;
 
+            let updatedLinks = [...links];
+
+            if (activeFilter === 'Todos os Links') {
+              updatedLinks = newOrder;
+            } else {
+              // Reordenação dentro de uma categoria
+              // 1. Encontrar os índices originais dos links filtrados na lista global
+              const filteredIndices = links
+                .map((link, index) => link.tags.includes(activeFilter) ? index : -1)
+                .filter(index => index !== -1);
+              
+              // 2. Substituir os links nesses índices pela nova ordem
+              newOrder.forEach((link, i) => {
+                updatedLinks[filteredIndices[i]] = link;
+              });
+            }
+
             // Atualização local imediata para fluidez
-            setLinks(newOrder);
+            setLinks(updatedLinks);
 
             // Persistir nova ordem no PocketBase
             try {
-              const updates = newOrder.map((item, index) => 
+              const updates = updatedLinks.map((item, index) => 
                 pb.collection('portaldelinks_links').update(item.id, { order: index })
               );
               await Promise.all(updates);
@@ -1372,7 +1390,7 @@ export default function App() {
               <DraggableLinkItem
                 key={link.id}
                 link={link}
-                dragEnabled={activeFilter === 'Todos os Links' && searchQuery === ''}
+                dragEnabled={searchQuery === ''}
                 onEdit={() => requestOpenModal(link)}
                 onDelete={() => requestDeleteLink(link)}
               />
