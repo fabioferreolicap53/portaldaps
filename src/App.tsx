@@ -588,76 +588,110 @@ const LinkCard = ({
   onEdit,
   onDelete,
   item
-}: LinkCardProps) => (
-  <Reorder.Item
-    value={item}
-    id={item.id.toString()}
-    layout
-    className={`group rounded-xl p-6 flex flex-col justify-between min-h-[220px] relative overflow-hidden border border-white/5 cursor-grab active:cursor-grabbing select-none hover:border-white/10 transition-colors duration-300 ${
-      isFeatured ? 'bg-primary-container border-white/20' : 'bg-primary'
-    }`}
-    initial={{ opacity: 0, scale: 0.8 }}
-    animate={{ opacity: 1, scale: 1 }}
-    exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.2 } }}
-    whileDrag={{ 
-      scale: 1.02, 
-      zIndex: 50,
-      boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
-      backgroundColor: "rgba(0, 31, 63, 0.9)"
-    }}
-    transition={{
-      layout: { type: "spring", stiffness: 300, damping: 30 },
-      opacity: { duration: 0.2 }
-    }}
-  >
-    
-    <div className="absolute top-3 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-      <GripVertical className="w-4 h-4 text-white/20" />
-    </div>
+}: LinkCardProps) => {
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Só abre o link se não for clique nos botões de ação (tratado pelo stopPropagation)
+    if (url) {
+      const formattedUrl = url.startsWith('http') ? url : `https://${url}`;
+      window.open(formattedUrl, '_blank', 'noopener,noreferrer');
+    }
+  };
 
-    <div>
-      <div className="flex justify-between items-start mb-4">
-        <div 
-          className={`w-12 h-12 rounded-xl flex items-center justify-center p-2 border-2 transition-all duration-300 bg-black/40 ${glowColor}`}
-          style={customColor ? { borderColor: `${customColor}80`, boxShadow: `0 0 15px ${customColor}40` } : {}}
+  return (
+    <Reorder.Item
+      value={item}
+      id={item.id.toString()}
+      layout
+      onClick={handleCardClick}
+      className={`group rounded-2xl p-6 flex flex-col justify-between min-h-[230px] relative overflow-hidden border transition-all duration-500 cursor-pointer select-none ${
+        isFeatured 
+          ? 'bg-gradient-to-br from-primary-container to-primary border-white/20 shadow-xl' 
+          : 'bg-primary border-white/5 hover:border-white/10'
+      } hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.6)]`}
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+      whileHover={{ y: -8 }}
+      whileDrag={{ 
+        scale: 1.05, 
+        zIndex: 50,
+        cursor: "grabbing",
+        boxShadow: "0 30px 60px -12px rgba(0, 0, 0, 0.7)",
+        backgroundColor: "rgba(10, 25, 41, 1)"
+      }}
+      transition={{
+        layout: { type: "spring", stiffness: 300, damping: 30 },
+        opacity: { duration: 0.3 }
+      }}
+    >
+      {/* Overlay de Brilho Suave */}
+      <div className="absolute inset-0 bg-gradient-to-tr from-neon-blue/0 via-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+
+      {/* Botões de Ação - Topo Direito */}
+      <div className="absolute top-4 right-4 flex gap-2 z-20 transition-all duration-500">
+        <button 
+          onClick={(e) => { e.stopPropagation(); onEdit(); }}
+          className="p-2.5 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 text-white/40 hover:text-neon-blue hover:bg-white/10 hover:border-neon-blue/40 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 shadow-lg"
+          title="Editar Recurso"
         >
-          {isMaterialIcon ? (
-            <span className="material-symbols-rounded text-2xl" style={customColor ? { color: customColor } : { color: 'inherit' }}>
-              {Icon}
-            </span>
-          ) : (
-            <Icon className={`w-6 h-6 ${iconColor}`} style={customColor ? { color: customColor } : {}} />
-          )}
+          <Edit2 className="w-4 h-4" />
+        </button>
+        <button 
+          onClick={(e) => { e.stopPropagation(); onDelete(); }}
+          className="p-2.5 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 text-white/40 hover:text-error hover:bg-error/10 hover:border-error/40 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 delay-[50ms] shadow-lg"
+          title="Excluir Recurso"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Grip de Arrastar - Topo Centro */}
+      <div className="absolute top-3 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-30 transition-opacity cursor-grab active:cursor-grabbing p-1 z-10">
+        <GripVertical className="w-4 h-4 text-white" />
+      </div>
+
+      <div className="relative z-10 h-full flex flex-col justify-between">
+        <div>
+          <div 
+            className={`w-14 h-14 rounded-2xl flex items-center justify-center p-2 border-2 transition-all duration-500 bg-black/40 mb-5 ${glowColor} group-hover:scale-110 group-hover:rotate-3`}
+            style={customColor ? { borderColor: `${customColor}80`, boxShadow: `0 0 20px ${customColor}30` } : {}}
+          >
+            {isMaterialIcon ? (
+              <span className="material-symbols-rounded text-3xl" style={customColor ? { color: customColor } : { color: 'inherit' }}>
+                {Icon}
+              </span>
+            ) : (
+              <Icon className={`w-7 h-7 ${iconColor}`} style={customColor ? { color: customColor } : {}} />
+            )}
+          </div>
+          
+          <h3 className="text-xl font-black font-headline text-white mb-2 truncate group-hover:text-neon-blue transition-colors duration-300 tracking-tight">
+            {title}
+          </h3>
+          <p className="text-[11px] text-white/40 font-bold font-body mb-6 truncate uppercase tracking-[0.2em] flex items-center gap-2">
+            <Globe className="w-3 h-3 opacity-30" />
+            {url.replace('https://', '').replace('http://', '').split('/')[0]}
+          </p>
         </div>
-        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-          <button 
-            onClick={(e) => { e.stopPropagation(); onEdit(); }}
-            className="p-2 rounded-lg bg-white/10 text-white/60 hover:text-white hover:bg-white/20 transition-all"
-            title="Editar Link"
-          >
-            <Edit2 className="w-4 h-4" />
-          </button>
-          <button 
-            onClick={(e) => { e.stopPropagation(); onDelete(); }}
-            className="p-2 rounded-lg bg-white/10 text-white/60 hover:text-error hover:bg-error/20 transition-all"
-            title="Excluir Link"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+
+        <div className="flex flex-wrap gap-2">
+          {tags.map(tag => (
+            <span key={tag} className="px-3 py-1 rounded-lg bg-white/5 border border-white/5 text-[9px] uppercase font-black tracking-widest text-white/30 group-hover:text-white/60 group-hover:border-white/10 transition-all">
+              {tag}
+            </span>
+          ))}
         </div>
       </div>
-      <h3 className="text-xl font-bold font-headline text-white mb-1 truncate">{title}</h3>
-      <p className="text-sm text-white/70 font-body mb-4 truncate">{url}</p>
-    </div>
-    <div className="flex flex-wrap gap-2">
-      {tags.map(tag => (
-        <span key={tag} className="px-3 py-1 rounded-full bg-white/10 text-[10px] uppercase font-bold tracking-wider text-white/60">
-          {tag}
-        </span>
-      ))}
-    </div>
-  </Reorder.Item>
-);
+      
+      {/* Indicador de Link - Canto Inferior Direito */}
+      <div className="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-500 pointer-events-none">
+        <div className="p-2 rounded-full bg-neon-blue/10 border border-neon-blue/20 shadow-[0_0_15px_rgba(0,210,255,0.2)]">
+          <ArrowRight className="w-4 h-4 text-neon-blue" />
+        </div>
+      </div>
+    </Reorder.Item>
+  );
+};
 
 const Insights = ({ links, categories }: { links: any[], categories: any[] }) => {
   const totalLinks = links.length;
