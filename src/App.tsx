@@ -576,52 +576,35 @@ const LinkModal = ({ isOpen, onClose, onSave, categories, onAddCategory, onRemov
 };
 
 const FilterChips = ({ categories, activeFilter, onFilterChange }: { categories: string[], activeFilter: string, onFilterChange: (filter: string) => void }) => {
-  const containerRef = React.useRef<HTMLDivElement>(null);
-  const [constraints, setConstraints] = useState({ left: 0, right: 0 });
-
-  React.useEffect(() => {
-    if (containerRef.current) {
-      const scrollWidth = containerRef.current.scrollWidth;
-      const offsetWidth = containerRef.current.offsetWidth;
-      setConstraints({ left: -(scrollWidth - offsetWidth), right: 0 });
-    }
-  }, [categories]);
-
   return (
-    <div className="relative mb-14 w-full px-1">
+    <div className="relative mb-14 w-full group">
       {/* Efeito de fade nas bordas para indicar scroll */}
-      <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none"></div>
-      <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none"></div>
+      <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-background via-background/80 to-transparent z-10 pointer-events-none opacity-100 transition-opacity"></div>
+      <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-background via-background/80 to-transparent z-10 pointer-events-none opacity-100 transition-opacity"></div>
       
-      <div className="overflow-hidden w-full">
-        <motion.div 
-          ref={containerRef}
-          drag="x"
-          dragConstraints={constraints}
-          dragElastic={0.15}
-          className="flex gap-4 cursor-grab active:cursor-grabbing select-none w-max px-4 py-2"
-        >
+      <div className="overflow-x-auto custom-scrollbar-hide flex items-center scroll-smooth">
+        <div className="flex items-center gap-3 md:gap-4 py-4 w-max min-w-full justify-center md:justify-start px-8">
           {['Todos os Links', ...categories].map((filter) => (
-            <button 
+            <button
               key={filter}
               onClick={() => onFilterChange(filter)}
-              className={`relative group px-7 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 whitespace-nowrap overflow-hidden ${
-                activeFilter === filter 
-                  ? 'text-primary shadow-[0_10px_30px_-10px_rgba(0,210,255,0.6)] border border-neon-blue' 
-                  : 'bg-white text-primary/50 border border-primary/5 hover:border-primary/15 hover:text-primary hover:shadow-lg hover:-translate-y-0.5'
+              className={`relative px-5 md:px-8 py-3 md:py-3.5 rounded-xl md:rounded-2xl text-[10px] md:text-xs font-black uppercase tracking-[0.15em] md:tracking-[0.2em] transition-all duration-500 whitespace-nowrap border ${
+                activeFilter === filter
+                  ? 'bg-neon-blue text-primary border-neon-blue shadow-[0_0_25px_rgba(0,210,255,0.4)] scale-105 z-20'
+                  : 'bg-white text-primary/40 border-white/5 hover:border-white/20 hover:text-primary/60 hover:scale-105 z-10 shadow-sm'
               }`}
             >
-              {/* Background animado para o item ativo */}
-              {activeFilter === filter && (
-                <div className="absolute inset-0 bg-neon-blue pointer-events-none">
-                  <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent"></div>
-                </div>
-              )}
-              
               <span className="relative z-10">{filter}</span>
+              {activeFilter === filter && (
+                <motion.div 
+                  layoutId="activeFilter"
+                  className="absolute inset-0 bg-neon-blue rounded-xl md:rounded-2xl -z-10 shadow-[0_0_30px_rgba(0,210,255,0.3)]"
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                />
+              )}
             </button>
           ))}
-        </motion.div>
+        </div>
       </div>
     </div>
   );
@@ -642,6 +625,7 @@ interface LinkCardProps {
   onEdit: () => void;
   onDelete: () => void;
   item: any;
+  dragEnabled?: boolean;
 }
 
 const LinkCard = ({ 
@@ -657,12 +641,22 @@ const LinkCard = ({
   customColor = '',
   onEdit,
   onDelete,
-  item
+  item,
+  dragEnabled = true
 }: LinkCardProps) => {
   const [isCopied, setIsCopied] = useState(false);
+  const dragStartTime = React.useRef(0);
+
+  const handlePointerDown = () => {
+    dragStartTime.current = Date.now();
+  };
 
   const handleCardClick = (e: React.MouseEvent) => {
-    // Só abre o link se não for clique nos botões de ação
+    // Se o tempo entre o clique e o soltar for maior que 200ms, 
+    // consideramos que foi uma tentativa de arrastar, não um clique para abrir o link.
+    const clickDuration = Date.now() - dragStartTime.current;
+    if (clickDuration > 200) return;
+
     if (url) {
       const formattedUrl = url.startsWith('http') ? url : `https://${url}`;
       window.open(formattedUrl, '_blank', 'noopener,noreferrer');
@@ -682,31 +676,16 @@ const LinkCard = ({
   };
 
   return (
-    <Reorder.Item
-      value={item}
-      id={item.id.toString()}
-      layout
+    <div
+      onPointerDown={handlePointerDown}
       onClick={handleCardClick}
-      className={`group rounded-2xl p-5 md:p-7 flex flex-col justify-between min-h-[250px] relative overflow-hidden border transition-all duration-500 cursor-pointer select-none ${
+      className={`group rounded-2xl p-5 md:p-7 flex flex-col justify-between min-h-[250px] relative overflow-hidden border transition-all duration-500 select-none h-full ${
+        dragEnabled ? 'cursor-pointer' : 'cursor-default'
+      } ${
         isFeatured 
           ? 'bg-[#0A1929] border-neon-blue/40 shadow-[0_0_20px_rgba(0,210,255,0.15)] ring-1 ring-neon-blue/20' 
           : 'bg-primary border-white/5 hover:border-white/10'
       } hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.6)]`}
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-      whileHover={{ y: -8 }}
-      whileDrag={{ 
-        scale: 1.05, 
-        zIndex: 50,
-        cursor: "grabbing",
-        boxShadow: "0 30px 60px -12px rgba(0, 0, 0, 0.7)",
-        backgroundColor: "rgba(10, 25, 41, 1)"
-      }}
-      transition={{
-        layout: { type: "spring", stiffness: 300, damping: 30 },
-        opacity: { duration: 0.3 }
-      }}
     >
       {/* Overlay de Brilho Suave para não destaque */}
       {!isFeatured && (
@@ -717,7 +696,7 @@ const LinkCard = ({
       {isFeatured && (
         <>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(0,210,255,0.15),transparent_70%)] pointer-events-none"></div>
-          <div className="absolute top-0 right-0 p-4 z-20">
+          <div className="absolute top-0 right-0 p-4 z-10 transition-opacity duration-300 group-hover:opacity-0 pointer-events-none">
             <motion.div 
               animate={{ 
                 rotate: [0, 5, -5, 0],
@@ -740,7 +719,7 @@ const LinkCard = ({
       )}
 
       {/* Botões de Ação - Topo Direito */}
-      <div className="absolute top-4 right-4 flex gap-1.5 md:gap-2 z-20 transition-all duration-500">
+      <div className="absolute top-4 right-4 flex gap-1.5 md:gap-2 z-30 transition-all duration-500">
         <button 
           onClick={handleCopyLink}
           className={`p-2 md:p-2.5 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 transition-all active:scale-90 shadow-lg ${
@@ -767,9 +746,11 @@ const LinkCard = ({
       </div>
 
       {/* Grip de Arrastar - Topo Centro */}
-      <div className="absolute top-3 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-30 transition-opacity cursor-grab active:cursor-grabbing p-1 z-10">
-        <GripVertical className="w-4 h-4 text-white" />
-      </div>
+      {dragEnabled && (
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-30 transition-opacity cursor-grab active:cursor-grabbing p-1 z-10">
+          <GripVertical className="w-4 h-4 text-white" />
+        </div>
+      )}
 
       <div className="relative z-10 h-full flex flex-col justify-between">
         <div className="space-y-4 md:space-y-5">
@@ -817,7 +798,7 @@ const LinkCard = ({
           <ArrowRight className="w-4 h-4 text-neon-blue" />
         </div>
       </div>
-    </Reorder.Item>
+    </div>
   );
 };
 
@@ -1304,29 +1285,27 @@ export default function App() {
         />
         
         <Reorder.Group 
-          axis="x" 
+          axis="y" 
           values={filteredLinks} 
           onReorder={async (newOrder) => {
+            // Só permite reordenar se não houver filtros ou busca ativos
+            if (activeFilter !== 'Todos os Links' || searchQuery !== '') return;
+
             const isOrderChanged = JSON.stringify(newOrder.map(l => l.id)) !== JSON.stringify(filteredLinks.map(l => l.id));
             if (!isOrderChanged) return;
 
             // Atualização local imediata para fluidez
-            const updatedLinks = [...links];
-            newOrder.forEach((item, index) => {
-              const idx = updatedLinks.findIndex(l => l.id === item.id);
-              updatedLinks[idx] = { ...item, order: index };
-            });
-            setLinks(updatedLinks);
+            setLinks(newOrder);
 
             // Persistir nova ordem no PocketBase
             try {
-              await Promise.all(
-                newOrder.map((item, index) => 
-                  pb.collection('portaldelinks_links').update(item.id, { order: index })
-                )
+              const updates = newOrder.map((item, index) => 
+                pb.collection('portaldelinks_links').update(item.id, { order: index })
               );
+              await Promise.all(updates);
             } catch (error) {
               console.error("Erro ao salvar nova ordem:", error);
+              await fetchData();
             }
           }}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
@@ -1334,22 +1313,33 @@ export default function App() {
         >
           <AnimatePresence mode="popLayout">
             {filteredLinks.map((link) => (
-              <LinkCard 
+              <Reorder.Item
                 key={link.id}
-                item={link}
-                icon={link.isMaterialIcon ? link.icon : iconMap[link.icon]} 
-                iconColor={link.iconColor} 
-                glowColor={link.glowColor}
-                title={link.title} 
-                url={link.url} 
-                description={link.description}
-                tags={link.tags} 
-                isFeatured={link.isFeatured}
-                isMaterialIcon={link.isMaterialIcon}
-                customColor={link.customColor}
-                onEdit={() => requestOpenModal(link)}
-                onDelete={() => requestDeleteLink(link)}
-              />
+                value={link}
+                id={link.id.toString()}
+                dragListener={activeFilter === 'Todos os Links' && searchQuery === ''}
+                className="relative bg-primary rounded-2xl"
+                style={{ zIndex: 0 }}
+                drag
+                whileDrag={{ scale: 1.05, zIndex: 50, cursor: "grabbing" }}
+              >
+                <LinkCard 
+                  item={link}
+                  dragEnabled={activeFilter === 'Todos os Links' && searchQuery === ''}
+                  icon={link.isMaterialIcon ? link.icon : iconMap[link.icon]} 
+                  iconColor={link.iconColor} 
+                  glowColor={link.glowColor}
+                  title={link.title} 
+                  url={link.url} 
+                  description={link.description}
+                  tags={link.tags} 
+                  isFeatured={link.isFeatured}
+                  isMaterialIcon={link.isMaterialIcon}
+                  customColor={link.customColor}
+                  onEdit={() => requestOpenModal(link)}
+                  onDelete={() => requestDeleteLink(link)}
+                />
+              </Reorder.Item>
             ))}
           </AnimatePresence>
           
