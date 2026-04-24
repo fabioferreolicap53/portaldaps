@@ -796,11 +796,11 @@ const LinkCard = ({
           </div>
           
           <div>
-            <h3 className="text-lg md:text-xl font-black font-headline text-white mb-2 leading-tight line-clamp-2 group-hover:text-neon-blue transition-colors duration-300 tracking-tight">
+            <h3 className="text-lg md:text-xl font-black font-headline text-white mb-2 leading-tight group-hover:text-neon-blue transition-colors duration-300 tracking-tight">
               {title}
             </h3>
             {description && (
-              <p className="text-[11px] md:text-[12px] text-white/60 font-medium font-body mb-4 line-clamp-3 leading-relaxed">
+              <p className="text-[11px] md:text-[12px] text-white/60 font-medium font-body mb-4 leading-relaxed">
                 {description}
               </p>
             )}
