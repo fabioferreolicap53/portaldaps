@@ -3,7 +3,10 @@ import PocketBase from 'pocketbase';
 import {
   PlusCircle, FolderHeart, Search, Sparkles, Copy, Edit2, Code, Briefcase, PenTool, Globe, Plus, ArrowRight, X, Check, Trash2, GripVertical, AlertTriangle, Lock, Eye, EyeOff
 } from 'lucide-react';
-import { Reorder, AnimatePresence, motion, useDragControls } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
+import { SortableContext, arrayMove, rectSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 const pb = new PocketBase(import.meta.env.VITE_POCKETBASE_URL || 'https://centraldedados.dev.br');
 pb.autoCancellation(false); // Desativa o cancelamento automático para limpar o console
@@ -645,7 +648,8 @@ interface LinkCardProps {
   onDelete: () => void;
   item: any;
   dragEnabled?: boolean;
-  dragControls?: any;
+  dragHandleRef?: (node: HTMLDivElement | null) => void;
+  dragHandleProps?: any;
 }
 
 const LinkCard = ({ 
@@ -663,7 +667,8 @@ const LinkCard = ({
   onDelete,
   item,
   dragEnabled = true,
-  dragControls
+  dragHandleRef,
+  dragHandleProps
 }: LinkCardProps) => {
   const [isCopied, setIsCopied] = useState(false);
   const dragStartTime = React.useRef(0);
@@ -770,11 +775,11 @@ const LinkCard = ({
       {/* Grip de Arrastar - Topo Centro */}
       {dragEnabled && (
         <div 
-          onPointerDown={(e) => {
-            e.preventDefault();
-            dragControls?.start(e);
-          }}
-          className="absolute top-3 left-1/2 -translate-x-1/2 opacity-40 md:opacity-0 md:group-hover:opacity-40 transition-opacity cursor-grab active:cursor-grabbing p-3 z-30 touch-none"
+          onClick={(e) => e.stopPropagation()}
+          ref={dragHandleRef}
+          {...dragHandleProps}
+          className="absolute top-3 left-1/2 -translate-x-1/2 opacity-60 md:opacity-0 md:group-hover:opacity-60 transition-opacity cursor-grab active:cursor-grabbing p-3 z-30 touch-none"
+          title="Segure e arraste para reordenar"
         >
           <GripVertical className="w-5 h-5 text-white" />
         </div>
@@ -1058,37 +1063,60 @@ const AuthModal = ({ config, onClose, onSuccess }: { config: any, onClose: () =>
 const iconMap: any = { Sparkles, Code, Briefcase, PenTool, Globe, FolderHeart };
 
 const DraggableLinkItem: React.FC<{ link: any, dragEnabled: boolean, onEdit: () => void, onDelete: () => void }> = ({ link, dragEnabled, onEdit, onDelete }) => {
-  const controls = useDragControls();
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({
+    id: link.id.toString(),
+    disabled: !dragEnabled
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 60 : 0,
+    willChange: 'transform'
+  } as React.CSSProperties;
 
   return (
-    <Reorder.Item
-      value={link}
-      id={link.id.toString()}
-      dragListener={false}
-      dragControls={controls}
+    <div
+      ref={setNodeRef}
       className="relative bg-primary rounded-2xl"
-      style={{ zIndex: 0, willChange: "transform" }}
-      drag
-      whileDrag={{ scale: 1.05, zIndex: 50, cursor: "grabbing" }}
+      style={style}
     >
-      <LinkCard 
-        item={link}
-        dragEnabled={dragEnabled}
-        dragControls={controls}
-        icon={link.isMaterialIcon ? link.icon : iconMap[link.icon]} 
-        iconColor={link.iconColor} 
-        glowColor={link.glowColor}
-        title={link.title} 
-        url={link.url} 
-        description={link.description}
-        tags={link.tags} 
-        isFeatured={link.isFeatured}
-        isMaterialIcon={link.isMaterialIcon}
-        customColor={link.customColor}
-        onEdit={onEdit}
-        onDelete={onDelete}
-      />
-    </Reorder.Item>
+      <div className={`h-full transition-transform duration-200 ${isDragging ? 'scale-[1.02] cursor-grabbing' : ''}`}>
+        <LinkCard 
+          item={link}
+          dragEnabled={dragEnabled}
+          dragHandleRef={setActivatorNodeRef}
+          dragHandleProps={{
+            ...attributes,
+            ...listeners,
+            onPointerDown: (event: React.PointerEvent<HTMLDivElement>) => {
+              event.stopPropagation();
+              listeners?.onPointerDown?.(event);
+            }
+          }}
+          icon={link.isMaterialIcon ? link.icon : iconMap[link.icon]} 
+          iconColor={link.iconColor} 
+          glowColor={link.glowColor}
+          title={link.title} 
+          url={link.url} 
+          description={link.description}
+          tags={link.tags} 
+          isFeatured={link.isFeatured}
+          isMaterialIcon={link.isMaterialIcon}
+          customColor={link.customColor}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
+      </div>
+    </div>
   );
 }
 
@@ -1103,6 +1131,15 @@ export default function App() {
     return localStorage.getItem('daps_active_category') || 'Todos os Links';
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        delay: 180,
+        tolerance: 8
+      }
+    })
+  );
 
   const [authConfig, setAuthConfig] = useState<{
     isOpen: boolean;
@@ -1135,6 +1172,7 @@ export default function App() {
   const fetchData = async () => {
     try {
       setIsLoading(true);
+      setFetchError(null);
       // Buscar Categorias
       const catRecords = await pb.collection('portaldelinks_categories').getFullList({
         sort: 'name',
@@ -1187,10 +1225,13 @@ export default function App() {
       if (error?.isAbort) return;
       
       if (error?.status === 403) {
-        console.error("Erro de Permissão: Verifique se as regras da API no PocketBase estão abertas (Públicas) para as coleções.");
+        setFetchError("Erro de Permissão: Verifique se as regras da API no PocketBase estão abertas (Públicas) para as coleções.");
+      } else if (error?.originalError?.message === 'Failed to fetch' || error?.status === 0) {
+        setFetchError("Erro de Conexão: O servidor do banco de dados está inacessível ou houve um timeout.");
       } else {
-        console.error("Erro ao carregar dados:", error);
+        setFetchError(`Erro ao carregar dados: ${error.message || 'Erro desconhecido'}`);
       }
+      console.error("Erro ao carregar dados:", error);
     } finally {
       setIsLoading(false);
     }
@@ -1307,6 +1348,51 @@ export default function App() {
     return matchesFilter && matchesSearch;
   });
 
+  const saveLinkOrder = async (updatedLinks: any[]) => {
+    try {
+      const updates = updatedLinks.map((item, index) => 
+        pb.collection('portaldelinks_links').update(item.id, { order: index })
+      );
+      await Promise.all(updates);
+    } catch (error) {
+      console.error("Erro ao salvar nova ordem:", error);
+      await fetchData();
+    }
+  };
+
+  const applyReorderedLinks = async (newOrder: any[]) => {
+    let updatedLinks = [...links];
+
+    if (activeFilter === 'Todos os Links') {
+      updatedLinks = newOrder;
+    } else {
+      const filteredIndices = links
+        .map((link, index) => link.tags.includes(activeFilter) ? index : -1)
+        .filter(index => index !== -1);
+      
+      newOrder.forEach((link, i) => {
+        updatedLinks[filteredIndices[i]] = link;
+      });
+    }
+
+    setLinks(updatedLinks);
+    await saveLinkOrder(updatedLinks);
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id || searchQuery !== '') return;
+
+    const oldIndex = filteredLinks.findIndex(link => link.id.toString() === active.id);
+    const newIndex = filteredLinks.findIndex(link => link.id.toString() === over.id);
+
+    if (oldIndex < 0 || newIndex < 0) return;
+
+    const reorderedLinks = arrayMove(filteredLinks, oldIndex, newIndex);
+    await applyReorderedLinks(reorderedLinks);
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-6">
@@ -1352,89 +1438,73 @@ export default function App() {
       />
       
       <main className="pt-24 md:pt-32 px-6 md:px-12 pb-24 max-w-[1600px] mx-auto">
-        <FilterChips 
-          categories={categories} 
-          activeFilter={activeFilter} 
-          onFilterChange={handleFilterChange} 
-        />
-        
-        <Reorder.Group 
-          values={filteredLinks} 
-          onReorder={async (newOrder) => {
-            // Só permite reordenar se não houver busca ativa
-            if (searchQuery !== '') return;
-
-            const isOrderChanged = JSON.stringify(newOrder.map(l => l.id)) !== JSON.stringify(filteredLinks.map(l => l.id));
-            if (!isOrderChanged) return;
-
-            // Criar uma cópia isolada da nova ordem para o estado local
-            const newOrderSnapshot = [...newOrder];
-
-            let updatedLinks = [...links];
-
-            if (activeFilter === 'Todos os Links') {
-              updatedLinks = newOrderSnapshot;
-            } else {
-              // Reordenação dentro de uma categoria
-              // 1. Encontrar os índices originais dos links filtrados na lista global
-              const filteredIndices = links
-                .map((link, index) => link.tags.includes(activeFilter) ? index : -1)
-                .filter(index => index !== -1);
-              
-              // 2. Substituir os links nesses índices pela nova ordem
-              newOrderSnapshot.forEach((link, i) => {
-                updatedLinks[filteredIndices[i]] = link;
-              });
-            }
-
-            // Atualização local imediata para fluidez visual e evitar glitches
-            setLinks(updatedLinks);
-
-            // Persistir nova ordem no PocketBase
-            try {
-              const updates = updatedLinks.map((item, index) => 
-                pb.collection('portaldelinks_links').update(item.id, { order: index })
-              );
-              await Promise.all(updates);
-            } catch (error) {
-              console.error("Erro ao salvar nova ordem:", error);
-              // Apenas em caso de erro, recarregamos para forçar a sincronia
-              await fetchData();
-            }
-          }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
-          <AnimatePresence mode="popLayout">
-            {filteredLinks.map((link) => (
-              <DraggableLinkItem
-                key={link.id}
-                link={link}
-                dragEnabled={searchQuery === ''}
-                onEdit={() => requestOpenModal(link)}
-                onDelete={() => requestDeleteLink(link)}
-              />
-            ))}
-          </AnimatePresence>
-          
-          {/* Botão estático fora da reordenação */}
-          <div className="h-full">
+        {fetchError ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="w-20 h-20 rounded-full bg-error/10 flex items-center justify-center mb-6 border border-error/20">
+              <AlertTriangle className="w-10 h-10 text-error" />
+            </div>
+            <h2 className="text-2xl font-black text-white mb-2 uppercase tracking-tighter">Erro de Sincronização</h2>
+            <p className="text-white/50 max-w-md mb-8 text-sm font-medium leading-relaxed">
+              {fetchError}
+            </p>
             <button 
-              onClick={() => requestOpenModal()}
-              className="w-full h-full group border-2 border-dashed border-white/5 rounded-2xl p-6 transition-colors duration-500 bg-primary/40 hover:border-neon-blue/40 hover:bg-primary-container/20 flex flex-col items-center justify-center min-h-[220px] gap-4 shadow-2xl relative overflow-hidden"
+              onClick={() => fetchData()}
+              className="px-8 py-3 bg-white text-primary rounded-xl font-black text-xs uppercase tracking-widest hover:bg-neon-blue hover:text-primary transition-all active:scale-95 shadow-xl"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-neon-blue/0 to-neon-blue/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:border-neon-blue/30 group-hover:shadow-[0_0_20px_rgba(0,210,255,0.2)]">
-                <Plus className="w-7 h-7 text-white/40 group-hover:text-neon-blue transition-colors duration-500" />
-              </div>
-              <div className="flex flex-col items-center gap-1">
-                <span className="text-white/40 font-bold text-xs uppercase tracking-[0.2em] group-hover:text-white transition-colors duration-500">Adicionar Novo</span>
-                <span className="text-[9px] text-white/20 font-black uppercase tracking-widest group-hover:text-neon-blue/50 transition-colors duration-500">Link no Vault</span>
-              </div>
+              Tentar Novamente
             </button>
           </div>
-        </Reorder.Group>
-        
-        <Insights links={links} categories={categories} />
+        ) : (
+          <>
+            <FilterChips 
+              categories={categories} 
+              activeFilter={activeFilter} 
+              onFilterChange={handleFilterChange} 
+            />
+            
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={filteredLinks.map(link => link.id.toString())}
+                strategy={rectSortingStrategy}
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredLinks.map((link) => (
+                    <DraggableLinkItem
+                      key={link.id}
+                      link={link}
+                      dragEnabled={searchQuery === ''}
+                      onEdit={() => requestOpenModal(link)}
+                      onDelete={() => requestDeleteLink(link)}
+                    />
+                  ))}
+                  
+                  {/* Botão estático fora da reordenação */}
+                  <div className="h-full">
+                    <button 
+                      onClick={() => requestOpenModal()}
+                      className="w-full h-full group border-2 border-dashed border-white/5 rounded-2xl p-6 transition-colors duration-500 bg-primary/40 hover:border-neon-blue/40 hover:bg-primary-container/20 flex flex-col items-center justify-center min-h-[220px] gap-4 shadow-2xl relative overflow-hidden"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-br from-neon-blue/0 to-neon-blue/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                      <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:border-neon-blue/30 group-hover:shadow-[0_0_20px_rgba(0,210,255,0.2)]">
+                        <Plus className="w-7 h-7 text-white/40 group-hover:text-neon-blue transition-colors duration-500" />
+                      </div>
+                      <div className="flex flex-col items-center gap-1">
+                        <span className="text-white/40 font-bold text-xs uppercase tracking-[0.2em] group-hover:text-white transition-colors duration-500">Adicionar Novo</span>
+                        <span className="text-[9px] text-white/20 font-black uppercase tracking-widest group-hover:text-neon-blue/50 transition-colors duration-500">Link no Vault</span>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </SortableContext>
+            </DndContext>
+            
+            <Insights links={links} categories={categories} />
+          </>
+        )}
       </main>
       <Footer />
     </div>
